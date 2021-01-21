@@ -1,0 +1,62 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{.Release.Name}}
+  labels:
+    {{- include "artigit.labels" . | nindent 4 }}
+spec:
+  schedule: {{.Values.cronjob.schedule | quote}}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{.Values.cronjob.successHistoryLimit}}
+  failedJobsHistoryLimit: {{.Values.cronjob.failHistoryLimit}}
+  startingDeadlineSeconds: {{.Values.cronjob.startingDeadlineSec}}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            parent: {{.Release.Name}}
+            template: {{.Release.Name}}
+        spec:
+          containers:
+            - name: artigit
+              image: {{.Values.job.image}}:{{.Values.job.imageTag}}
+              env:
+                - name: ARTIFACTORY_URL
+                  value: {{.Values.artifactory.url}}
+                - name: ARTIFACTORY_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{.Values.artifactory.credentials.secret}}
+                      key: username
+                - name: ARTIFACTORY_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{.Values.artifactory.credentials.secret}}
+                      key: password
+                - name: ARTIFACTORY_MIRROR_DIR
+                  value: {{.Values.artifactory.mirrorDir}}
+                - name: GIT_URL
+                  value: {{.Values.git.url}}
+                - name: GIT_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{.Values.git.credentials.secret}}
+                      key: username
+                - name: GIT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{.Values.git.credentials.secret}}
+                      key: password
+                - name: GIT_REPOSITORY
+                  value: {{.Values.git.repository}}
+                - name: GOGS_BOOTSTRAP
+                  value: {{.Values.gogsBootstrap | quote}}
+              resources:
+                requests:
+                  memory: {{.Values.job.requests.memory}}
+                  cpu: {{.Values.job.requests.cpu}}
+                limits:
+                  memory: {{.Values.job.limits.memory}}
+          restartPolicy: OnFailure

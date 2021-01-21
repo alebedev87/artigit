@@ -1,0 +1,39 @@
+# CronJob settings
+cronjob:
+  schedule: "*/1 * * * *"
+  successHistoryLimit: 3
+  failHistoryLimit: 3
+  # 2 schedules + 20 of leeway
+  startingDeadlineSec: 140
+
+# Job settings
+job:
+  image: artigit
+  imageTag: 1.0.0
+  requests:
+    memory: "64Mi"
+    cpu: "50m"
+  limits:
+    memory: "300Mi"
+
+# Artifactory settings
+artifactory:
+  url: ""
+  # don't forget the slash at the end, jfrog client needs it for a directory
+  mirrorDir: ""
+  credentials:
+    secret: artifactorycredentials
+    username: ""
+    password: ""
+
+# Git server settings
+git:
+  url: "http://gogs-gogs"
+  repository: repo
+  credentials:
+    secret: gitcredentials
+    username: ""
+    password: ""
+
+# if git server is gogs, some bootstrap can be done: admin user creation, initial repository
+gogsBootstrap: false
